@@ -28,11 +28,11 @@ namespace Cryptos
         X509Certificate2 cert;
         RSA _pri;
         RSA _pub;
-        readonly string halg;
+        readonly string _hash;
 
-        public Asymmetric(string pathToPfx, string password, string halg = "SHA256")
+        public Asymmetric(string pathToPfx, string password, string hash = "SHA256")
         {
-            this.halg = halg;
+            _hash = hash;
             cert = new X509Certificate2(pathToPfx, password, X509KeyStorageFlags.DefaultKeySet);
             Init();
         }
@@ -41,16 +41,21 @@ namespace Cryptos
         /// Create a cryptographic object from the path to a PFX file.
         /// </summary>
         /// <param name="bytes">The bytes of a CER or PFX file.</param>
-        /// <param name="password">The password to the CER or PFX file. NULL if there is no password</param>
-        /// <param name="halg"></param>
-        public Asymmetric(byte[] bytes, string halg = "SHA256")
+        /// <param name="hash"></param>
+        public Asymmetric(byte[] bytes, string hash = "SHA256")
         {
-            this.halg = halg;
+            _hash = hash;
             cert = new X509Certificate2(new X509Certificate(bytes));
             Init();
         }
 
-        public static Asymmetric FromPem(string pem, string halg = "SHA256")
+        /// <summary>
+        /// Convert a pem file into an object. It must contain the certificate, but it can optionally contain the private key.
+        /// </summary>
+        /// <param name="pem"></param>
+        /// <param name="hashAlgorithm"></param>
+        /// <returns></returns>
+        public static Asymmetric FromPem(string pem, string hashAlgorithm = "SHA256")
         {
             var s = pem.Between("-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----").RemoveWhiteSpace();
             var certBytes = s.FromBase64();
@@ -58,20 +63,13 @@ namespace Cryptos
             s = pem.Between("-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----").RemoveWhiteSpace();
             var priBytes = s.FromBase64();
 
-            var cert = new Asymmetric(certBytes, halg);
+            var cert = new Asymmetric(certBytes, hashAlgorithm);
 
             Debug.Print(priBytes.ToHex());
 
-            RSAParameters rsaParameters;
-            //using (var ms = new MemoryStream(pem.ToBytes()))
-            //{
-            //    var pr = new PemUtils.PemReader(ms);
-            //    rsaParameters = pr.ReadRsaKey();
-            //}
-
             if (priBytes.Length > 0)
             {
-                rsaParameters = PemToParameters(priBytes);
+                var rsaParameters = PemToParameters(priBytes);
                 var rsa = new RSACryptoServiceProvider();
                 rsa.ImportParameters(rsaParameters);
                 cert._pri = rsa;
@@ -83,7 +81,6 @@ namespace Cryptos
         void Init()
         {
             cert.Verify();
-            CspParameters Params = new CspParameters();
             _pri = (RSA)cert.PrivateKey;
             _pub = (RSA)cert.PublicKey.Key;
         }
@@ -92,7 +89,7 @@ namespace Cryptos
         /// The Decrypt and Sign require the private key. Assert that this object has been constructed with the PFX
         /// file, which contains the public and the private key.
         /// </summary>
-        public void AssertPrivate()
+        private void AssertPrivate()
         {
             if (_pri == null)
                 throw new Exception("This method requires the private key. You probably used the CER file to construct this Cryptos object. Use the PFX file instead. The CER file only contains the public key. The PFX file contains both the public and the private key.");
@@ -103,7 +100,7 @@ namespace Cryptos
         /// </summary>
         /// <param name="message">Any message to sign.</param>
         /// <returns>A digital signature.</returns>
-        public byte[] Sign(byte[] message) { AssertPrivate(); return _pri.SignData(message, new HashAlgorithmName(halg), RSASignaturePadding.Pkcs1); }
+        public byte[] Sign(byte[] message) { AssertPrivate(); return _pri.SignData(message, new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1); }
 
         /// <summary>
         /// By using only the public key, verify that a signature was indeed created for a given message with the private key.
@@ -112,7 +109,7 @@ namespace Cryptos
         /// to create the digital signature.</param>
         /// <param name="signature">The signature returned from calling the Sign() method.</param>
         /// <returns></returns>
-        public bool Verify(byte[] message, byte[] signature) { return _pub.VerifyData(message, signature, new HashAlgorithmName(halg), RSASignaturePadding.Pkcs1); }
+        public bool Verify(byte[] message, byte[] signature) { return _pub.VerifyData(message, signature, new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1); }
 
         /// <summary>
         /// This method will likely throw an exception if the message is longer than 200-ish bytes.
@@ -120,7 +117,7 @@ namespace Cryptos
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public byte[] EncryptAsymmetric(byte[] message) => _pri.Encrypt(message, RSAEncryptionPadding.Pkcs1);
+        private byte[] EncryptAsymmetric(byte[] message) => _pri.Encrypt(message, RSAEncryptionPadding.Pkcs1);
 
         /// <summary>
         /// This method will likely throw an exception if the message is longer than 200-ish bytes.
@@ -128,7 +125,7 @@ namespace Cryptos
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public byte[] DecryptAsymmetric(byte[] message) => _pri.Decrypt(message, RSAEncryptionPadding.Pkcs1);
+        private byte[] DecryptAsymmetric(byte[] message) => _pri.Decrypt(message, RSAEncryptionPadding.Pkcs1);
 
         /// <summary>
         /// Encrypt a message using the public key.
@@ -163,11 +160,18 @@ namespace Cryptos
             }
         }
 
+        /// <summary>
+        /// Encrypt a string into a base-64 cipher.
+        /// </summary>
+        /// <param name="message">An string; e.g. JSON.</param>
+        /// <returns>A base-64 encrypted string.</returns>
+        public string Encrypt(string message) => Encrypt(message.ToBytes()).ToBase64();
+
 
         /// <summary>
         /// Decrypt a message using the private key.
         /// </summary>
-        /// <param name="cipher"></param>
+        /// <param name="cipher">The encrypted bytes of an array of bytes.</param>
         /// <returns></returns>
         public byte[] Decrypt(byte[] cipher)
         {
@@ -182,9 +186,22 @@ namespace Cryptos
             }
         }
 
+        /// <summary>
+        /// Decrypt a base-64 encrypted message string.
+        /// </summary>
+        /// <param name="cipher">The base-64 string that represents the encrypted message.</param>
+        /// <returns></returns>
+        public string Decrypt(string cipher) => Decrypt(cipher.FromBase64()).String();
+
         #region PEM Files
         /* A PEM file is a Base64-encoded ASN.1 (BER) that is enclosed in a BEGIN and END header string.*/
 
+        /// <summary>
+        /// For PEM files that contain the PRIVATE KEY, this converts those bytes into an RSAParameters object,
+        /// which can then be attached to a certificate to allow decryption and signing.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         static RSAParameters PemToParameters(byte[] bytes)
         {
             using (var ms = new MemoryStream(bytes))
@@ -222,39 +239,6 @@ namespace Cryptos
             }
         }
 
-        static byte[] ReadBytes(BinaryReader br) => br.ReadBytes(ReadAsnInt32(br));
-
-        private static int ReadAsnInt32(BinaryReader br)
-        {
-            byte bt = 0;
-            byte lowbyte = 0x00;
-            byte highbyte = 0x00;
-            int count = 0;
-            bt = br.ReadByte();
-            if (bt != 0x02)
-                return 0;
-            bt = br.ReadByte();
-
-            if (bt == 0x81)
-                count = br.ReadByte();
-            else
-            if (bt == 0x82)
-            {
-                highbyte = br.ReadByte();
-                lowbyte = br.ReadByte();
-                byte[] modint = { lowbyte, highbyte, 0x00, 0x00 };
-                count = BitConverter.ToInt32(modint, 0);
-            }
-            else
-                count = bt;
-
-            while (br.ReadByte() == 0x00)
-            {	//remove high order zeros in data
-                count -= 1;
-            }
-            br.BaseStream.Seek(-1, SeekOrigin.Current);		//last ReadByte wasn't a removed zero, so back up a byte
-            return count;
-        }
         #endregion
     }
 }

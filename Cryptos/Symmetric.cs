@@ -31,10 +31,10 @@ namespace Cryptos
         /// <returns>An array of encrypted bytes.</returns>
         public static byte[] Encrypt(byte[] message, byte[] key)
         {
-            var aes = new AesCryptoServiceProvider { BlockSize = 128 };
-            var K = key.ToSha256().Take(32); // The 32 is what makes this AES-256
-            var T = aes.CreateEncryptor(K, K.Take(16));
-            return T.TransformFinalBlock(message, 0, message.Length);
+            var aes = new AesCryptoServiceProvider { BlockSize = 128 }; // Must always be 128. But AES-256 also uses 128 block size.
+            var k = key.ToSha256().Take(32); // The 32 is what makes this AES-256
+            var t = aes.CreateEncryptor(k, k.Take(16));
+            return t.TransformFinalBlock(message, 0, message.Length);
         }
 
         /// <summary>
@@ -53,10 +53,10 @@ namespace Cryptos
         /// <returns>The message passed into the Encrypt() method.</returns>
         public static byte[] Decrypt(byte[] cipher, byte[] key)
         {
-            var aes = new AesCryptoServiceProvider { BlockSize = 128 };
-            var K = key.ToSha256().Take(32); // The 32 is what makes this AES-256
-            var T = aes.CreateDecryptor(K, K.Take(16));
-            return T.TransformFinalBlock(cipher, 0, cipher.Length);
+            var aes = new AesCryptoServiceProvider { BlockSize = 128 }; // Must always be 128. But AES-256 also uses 128 block size.
+            var k = key.ToSha256().Take(32); // The 32 is what makes this AES-256
+            var t = aes.CreateDecryptor(k, k.Take(16));
+            return t.TransformFinalBlock(cipher, 0, cipher.Length);
         }
     }
 }

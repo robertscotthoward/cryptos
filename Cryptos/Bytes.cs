@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace Cryptos
 {
     /// <summary>
-    /// Some convenient extension methods for working with byte arrays.
+    /// Some convenient extension methods for working with byte arrays among other things.
     /// </summary>
     /// <author>Robert Howard</author>
     public static class Bytes
@@ -61,7 +61,7 @@ namespace Cryptos
         }
 
         /// <summary>
-        /// Convert a hex string to a byte aray.
+        /// Convert a hex string to a byte array.
         /// </summary>
         /// <param name="hex"></param>
         /// <returns></returns>
@@ -156,7 +156,6 @@ namespace Cryptos
             var t = r.ReadByte();
             var l = r.AsnReadLength();
             var v = r.ReadBytes(l);
-            Console.WriteLine($"{t:x} {l} {v.ToHex()}");
             return (t, l, v, new BinaryReader(new MemoryStream(v)));
         }
 
@@ -166,10 +165,7 @@ namespace Cryptos
             if (b < 128) return b;
             var l = b & 0x7F;
             var bytes = r.ReadBytes(l);
-            var len = 0;
-            foreach (var x in bytes)
-                len = (len << 8) + x;
-            return len;
+            return bytes.Aggregate(0, (current, x) => (current << 8) + x);
         }
         #endregion
     }

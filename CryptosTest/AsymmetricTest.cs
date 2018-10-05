@@ -54,7 +54,10 @@ namespace CryptosTest
         {
             var pem = File.ReadAllText(Path.Join(path, @"Data\certificate.pem")) + File.ReadAllText(Path.Join(path, @"Data\private.pem"));
             var rsa = Asymmetric.FromPem(pem);
-            var signature = rsa.Sign(message.ToBytes());
+
+            var cipher = rsa.Encrypt("Attack at dawn!");
+            Assert.AreEqual("Attack at dawn!", rsa.Decrypt(cipher));
+
         }
     }
 }
