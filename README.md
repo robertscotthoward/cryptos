@@ -17,7 +17,8 @@ The design considerations that drive this library are:
 
 # Use Cases
 This section shows how to encrypt, decrypt, sign, and verify 
-using RSA-2048. Encrypting and verifying a signature only requires 
+using RSA-2048, and encrypt and decrypt using AES-256. 
+Asymmetric Encryption and signature verification only requires 
 the public key; i.e. the certificate. To decrypt and sign requires
 the private key as well. Depending on what you have determines what 
 you can do.
