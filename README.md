@@ -13,6 +13,7 @@ The design considerations that drive this library are:
 * Easy, intuitive, convenient interface.
 * No configuration or choices - one good method; not twenty.
 * Use openssl on the git bash shell to generate asymmetric key pair files.
+* Use password-protected PFX files as well as base-64-encoded PEM files.
 
 # Use Cases
 This section shows how to encrypt, decrypt, sign, and verify 
