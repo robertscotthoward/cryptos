@@ -1,4 +1,4 @@
-# Cryptos - an easy C# .NET Standard 2.0 interface to RSA and AES.
+# Cryptos - Simple RSA/AES Cryptography - C# .NET Standard 2.0.
 This managed C# .NET Standard 2.0 library implements exactly one "good" industry best practices method for symmetric and asymmetric cryptography.
 For symmetric encryption, AES-256 is used to encrypt and decrypt.
 For asymmetric encryption, RSA (1024, 2048, 4096) is used to sign and verify signatures; 
