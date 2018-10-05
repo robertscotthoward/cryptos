@@ -43,7 +43,7 @@ by a password.
 var message = "Attack at dawn!";
 var password = "hello"; // The password to the pfx file.
 var path = @"C:\temp\mykeypair.pfx";
-var rsa = new Asymmetric(Path.Join(path, @"Data\certificate.pfx"), password);
+var rsa = new Asymmetric(path, password);
 
 // Sign a message
 var signature = rsa.Sign(message.ToBytes());
