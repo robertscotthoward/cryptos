@@ -1,0 +1,5 @@
+BASH SHELL DEPLOYMENT NOTES
+
+d:
+cd "D:\Github\cryptos\Cryptos\bin\Release\Cryptos.1.0.0.nupkg"
+dotnet nuget push "Cryptos\bin\Release\Cryptos.1.0.1.nupkg" -k $NugetApiKey -s https://api.nuget.org/v3/index.json

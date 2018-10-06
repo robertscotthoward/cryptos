@@ -35,6 +35,13 @@ Assert.AreEqual("i5gZtA6bIKXixFYTtalLxQ==", cipher);
 Assert.AreEqual(message, Symmetric.Decrypt(cipher, password));
 ```
 
+The bytes example is:
+byte[] messageBytes = { 0x25, 0x9F, 0xB3 };
+byte[] passwordBytes = { 0x12, 0x34, 0x56, 0x78 };
+Assert.AreEqual(messageBytes.ToBase64(), Symmetric.Decrypt(Symmetric.Encrypt(messageBytes, passwordBytes), passwordBytes).ToBase64());
+```
+```
+
 ## Asymmetric using pfx file
 A PFX (Personal Information Exchange Format) file is a file that contains a key pair but is protected
 by a password.
@@ -45,19 +52,13 @@ var password = "hello"; // The password to the pfx file.
 var path = @"C:\temp\mykeypair.pfx";
 var rsa = new Asymmetric(path, password);
 
-// Sign a message
-var signature = rsa.Sign(message.ToBytes());
-Assert.AreEqual(256, signature.Length);
-Debug.Print(signature.ToBase64());
+var rsa = new Asymmetric(Path.Join(path, @"Data\certificate.pfx"), password);
 
-// Verify the signature
-Assert.IsTrue(rsa.Verify(message.ToBytes(), signature));
+var signature = rsa.Sign(message);
+Assert.IsTrue(rsa.Verify(message, signature));
 
-// Encrypt a message. Note, this is done by RSA-encrypting a symmetric key, then AES-256 encrypting it.
-var cipher = rsa.Encrypt(message.ToBytes());
-
-// Decrypt it.
-Assert.AreEqual(message, rsa.Decrypt(cipher).String());
+var cipher = rsa.Encrypt(message);
+Assert.AreEqual(message, rsa.Decrypt(cipher));
 ```
 
 ## Asymmetric using pem files
@@ -70,6 +71,7 @@ var cipher = rsa.Encrypt(message);
 rsa.Verify(message, signature);
 ```
 
+By concatenating the public PEM to private PEM, we can decrypt and verify too.
 ```
 var pem = File.ReadAllText("certificate.pem") + File.ReadAllText("private.pem");
 var rsa = Asymmetric.FromPem(pem);

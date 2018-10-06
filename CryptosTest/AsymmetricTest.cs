@@ -12,6 +12,7 @@ namespace CryptosTest
     {
         string signatureBase64 = "lkH0c5QXL04I2+EBLcfBlQdavDfC8usaEIcBZjqlnDyG6ugMmsE/0vjw3jA7h9BYLDAgAu+MkYuQfPlSQbA8kkBlA87l75HaHXxfaSJtoUX+scNqtc3kyEaEO2s5N9vxJVkCOpceYVRsAfuEqzAvZrEVbQAcMkcjVkHtE9bp9BCimQuziqXZA94JHtE8M1JkFv+Vy4JxIErHJYcq/bjuuPthEPM5TPlNAvHlj31HL6wkfl0r7k4AQedloVk1B9ejAyysKOcui5+gWB0ODg3EV43BzNeLIPoeydQ2rvg8d85YI3S1g8ZBAXKdOTowHJFAeCcZs9jE02i2j3t7za1eGA==";
         string message = "Attack at dawn!";
+        private byte[] bytes = {0x25, 0x9F, 0xB3};
         string password = "hello"; // The password to the pfx file.
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -20,26 +21,24 @@ namespace CryptosTest
         {
             var rsa = new Asymmetric(Path.Join(path, @"Data\certificate.pfx"), password);
 
-            // Sign a message
-            var signature = rsa.Sign(message.ToBytes());
-            Assert.AreEqual(256, signature.Length);
-            Debug.Print(signature.ToBase64());
+            // EXAMPLE WITH STRING
+            var signature = rsa.Sign(message);
+            Assert.IsTrue(rsa.Verify(message, signature));
+            var cipher = rsa.Encrypt(message);
+            Assert.AreEqual(message, rsa.Decrypt(cipher));
 
-            // Verify the signature
-            Assert.IsTrue(rsa.Verify(message.ToBytes(), signature));
-
-            // Encrypt a message. Note, this is done by RSA-encrypting a symmetric key, then AES-256 encrypting it.
-            var cipher = rsa.Encrypt(message.ToBytes());
-
-            // Decrypt it.
-            Assert.AreEqual(message, rsa.Decrypt(cipher).String());
+            // CONDENSED EXAMPLE WITH BYTES
+            Assert.IsTrue(rsa.Verify(message, rsa.Sign(message)));
+            Assert.AreEqual(message, rsa.Decrypt(rsa.Encrypt(message)));
         }
 
         [TestMethod]
         public void VerifyUsingPublicPemTest()
         {
+            // Create a signature with the PFX file.
             var signature = new Asymmetric(Path.Join(path, @"Data\certificate.pfx"), password).Sign(message.ToBytes());
 
+            // Use the PEM certificate to verify the signature.
             var pem = File.ReadAllText(Path.Join(path, @"Data\certificate.pem"));
             var rsa = Asymmetric.FromPem(pem);
             Assert.IsTrue(rsa.Verify(message.ToBytes(), signature));

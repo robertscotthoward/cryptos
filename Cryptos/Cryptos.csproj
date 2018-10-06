@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Robert Howard</Authors>
+    <Company />
+    <Description>This managed C# .NET Standard 2.0 library implements exactly one "good" industry best practices method for symmetric and asymmetric encryption. For symmetric encryption, AES-256 is used to encrypt and decrypt. For asymmetric encryption, RSA (1024, 2048, 4096) is used to sign and verify signatures; and encrypt and decrypt using RSA/AES-256. This library only implements the minimum, most convenient methods needed to perform the most popular cryptographic operations. It has no dependencies on other libraries.</Description>
+    <PackageProjectUrl>https://github.com/robertscotthoward/cryptos</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MS-PL</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/robertscotthoward/cryptos</RepositoryUrl>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>

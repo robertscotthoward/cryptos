@@ -103,6 +103,13 @@ namespace Cryptos
         public byte[] Sign(byte[] message) { AssertPrivate(); return _pri.SignData(message, new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1); }
 
         /// <summary>
+        /// Sign a string (e.g. JSON) and get a base-64 signature.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public string Sign(string message) { AssertPrivate(); return _pri.SignData(message.ToBytes(), new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1).ToBase64(); }
+
+        /// <summary>
         /// By using only the public key, verify that a signature was indeed created for a given message with the private key.
         /// </summary>
         /// <param name="message">Any message to verify. This is the same message that was passed into the Sign() method 
@@ -110,6 +117,14 @@ namespace Cryptos
         /// <param name="signature">The signature returned from calling the Sign() method.</param>
         /// <returns></returns>
         public bool Verify(byte[] message, byte[] signature) { return _pub.VerifyData(message, signature, new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1); }
+
+        /// <summary>
+        /// Verify that a base-64 signature matches the message it signed.
+        /// </summary>
+        /// <param name="message">A plain-text message.</param>
+        /// <param name="signature">A base-64 signature.</param>
+        /// <returns></returns>
+        public bool Verify(string message, string signature) { return _pub.VerifyData(message.ToBytes(), signature.FromBase64(), new HashAlgorithmName(_hash), RSASignaturePadding.Pkcs1); }
 
         /// <summary>
         /// This method will likely throw an exception if the message is longer than 200-ish bytes.
