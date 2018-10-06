@@ -16,8 +16,28 @@ hij k   lmn opqrstuvwxyz
 
 
         [TestMethod]
+        public void TakeSkipTest()
+        {
+            var bytes = alphabet.ToBytes();
+            Assert.AreEqual("", bytes.Take(0).String());
+            Assert.AreEqual(alphabet, bytes.Take(999).String());
+            Assert.AreEqual(alphabet, bytes.Take(-999).String());
+            Assert.AreEqual("abcde", bytes.Take(5).String());
+            Assert.AreEqual("vwxyz", bytes.Take(-5).String());
+
+            Assert.AreEqual("abcdefghijklmnopqrstuvwxyz", bytes.Skip(0).String());
+            Assert.AreEqual("", bytes.Skip(999).String());
+            Assert.AreEqual("abcdefghijklmnopqrstuvwxyz", bytes.Skip(-999).String());
+            Assert.AreEqual("fghijklmnopqrstuvwxyz", bytes.Skip(5).String());
+            Assert.AreEqual("abcdefghijklmnopqrstu", bytes.Skip(-5).String());
+
+        }
+
+
+        [TestMethod]
         public void Hashes()
         {
+            Assert.AreEqual("", "".ToBytes().ToHex());
             Assert.AreEqual("C3FCD3D76192E4007DFB496CCA67E13B", alphabet.ToBytes().ToMd5().ToHex());
             Assert.AreEqual("32D10C7B8CF96570CA04CE37F2A19D84240D3A89", alphabet.ToBytes().ToSha1().ToHex());
             Assert.AreEqual("FEB67349DF3DB6F5924815D6C3DC133F091809213731FE5C7B5F4999E463479FF2877F5F2936FA63BB43784B12F3EBB4", alphabet.ToBytes().ToSha256().ToHex());
@@ -58,6 +78,8 @@ hij k   lmn opqrstuvwxyz
         [TestMethod]
         public void Between()
         {
+            Assert.AreEqual("", alphabet.Between("a", "xxx"));
+            Assert.AreEqual("", alphabet.Between("xxx", "z"));
             Assert.AreEqual("def", alphabet.Between("abc", "ghij"));
             Assert.AreEqual("ghi", alphabet.Between("f", "j"));
             

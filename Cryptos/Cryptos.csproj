@@ -9,9 +9,10 @@
     <PackageProjectUrl>https://github.com/robertscotthoward/cryptos</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MS-PL</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/robertscotthoward/cryptos</RepositoryUrl>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2</Version>
+    <PackageReleaseNotes>Better protection from rainbow attacks via appended salt, rather than using the key as a salt. So now encrypting the same message with the same key will produce a different cipher text.</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>

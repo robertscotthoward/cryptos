@@ -16,13 +16,59 @@ namespace Cryptos
         public static byte[] ToMd5(this byte[] bytes) => new MD5CryptoServiceProvider().ComputeHash(bytes);
         public static byte[] ToSha1(this byte[] bytes) => new SHA1CryptoServiceProvider().ComputeHash(bytes);
         public static byte[] ToSha256(this byte[] bytes) => new SHA384CryptoServiceProvider().ComputeHash(bytes);
-        public static string ToSha1Hex(this byte[] bytes) => new SHA1CryptoServiceProvider().ComputeHash(bytes).ToHex();
         public static string ToBase64(this byte[] bytes) => Convert.ToBase64String(bytes ?? new byte[0]);
+
+        /// <summary>
+        /// Return the head of a byte array; i.e. the first <paramref name="length"/> bytes in the array.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public static byte[] Take(this byte[] bytes, int length)
         {
-            var l = Math.Min(bytes.Length, length);
-            var b = new byte[l];
+            byte[] b;
+            int l;
+            if (length < 0)
+            {
+                length = -length;
+                l = Math.Min(bytes.Length, length);
+                b = new byte[l];
+                Array.Copy(bytes, bytes.Length - l, b, 0, l);
+                return b;
+            }
+
+            l = Math.Min(bytes.Length, length);
+            b = new byte[l];
             Array.Copy(bytes, 0, b, 0, l);
+            return b;
+        }
+
+        /// <summary>
+        /// Return the tail end of a byte array.
+        /// </summary>
+        /// <param name="bytes">The input byte array.</param>
+        /// <param name="length">The number of bytes to skip over before returning the remaining number of bytes.
+        /// If negative, then return that number of bytes from the end of the array.</param>
+        /// <returns></returns>
+        public static byte[] Skip(this byte[] bytes, int length)
+        {
+            byte[] b;
+            int l;
+            if (length < 0)
+            {
+                l = -length;
+                if (l < 0) return new byte[0];
+                if (l > bytes.Length) return bytes;
+                l = Math.Min(bytes.Length, bytes.Length - l);
+                b = new byte[l];
+                Array.Copy(bytes, 0, b, 0, l);
+                return b;
+            }
+
+            l = bytes.Length - length;
+            if (l < 0) return new byte[0]; 
+            b = new byte[l];
+            Array.Copy(bytes, bytes.Length - l, b, 0, l);
             return b;
         }
 
@@ -53,7 +99,7 @@ namespace Cryptos
 
         public static string ToHex(this byte[] bytes)
         {
-            if (bytes == null) bytes = new byte[0];
+            bytes = bytes ?? new byte[0];
             var s = new StringBuilder();
             foreach (var t in bytes)
                 s.AppendFormat(ToHex(t));
@@ -145,12 +191,6 @@ namespace Cryptos
 
         #region ASN.1
         
-        public static void AsnReadExpectedByte(this BinaryReader r, byte expectedValue)
-        {
-            var b = r.ReadByte();
-            if (b != expectedValue) throw new Exception($"Expected byte 0x{expectedValue:X} but got 0x{b:X} instead");
-        }
-
         public static (byte tag, int length, byte[] bytes, BinaryReader value) AsnReadTlv(this BinaryReader r)
         {
             var t = r.ReadByte();
@@ -166,6 +206,20 @@ namespace Cryptos
             var l = b & 0x7F;
             var bytes = r.ReadBytes(l);
             return bytes.Aggregate(0, (current, x) => (current << 8) + x);
+        }
+
+        /// <summary>
+        /// Concatenate two similar arrays.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static T[] Append<T>(this T[] a, T[] b)
+        {
+            var c = new T[a.Length + b.Length];
+            a.CopyTo(c, 0);
+            b.CopyTo(c, a.Length);
+            return c;
         }
         #endregion
     }

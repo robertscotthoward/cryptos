@@ -24,7 +24,7 @@ namespace Cryptos
         public static string Encrypt(string message, string key) => Encrypt(message.ToBytes(), key.ToBytes()).ToBase64();
 
         /// <summary>
-        /// Encrypt using AES-256.
+        /// Encrypt using AES-256 and an 8-byte initialization vector; i.e. a salt.
         /// </summary>
         /// <param name="message">An array of bytes to be encrypted.</param>
         /// <param name="key">An array of bytes that serves as a symmetric key.</param>
@@ -32,9 +32,10 @@ namespace Cryptos
         public static byte[] Encrypt(byte[] message, byte[] key)
         {
             var aes = new AesCryptoServiceProvider { BlockSize = 128 }; // Must always be 128. But AES-256 also uses 128 block size.
+            var salt = Bytes.RandomBytesSecure(16);
             var k = key.ToSha256().Take(32); // The 32 is what makes this AES-256
-            var t = aes.CreateEncryptor(k, k.Take(16));
-            return t.TransformFinalBlock(message, 0, message.Length);
+            var t = aes.CreateEncryptor(k, salt);
+            return salt.Append(t.TransformFinalBlock(message, 0, message.Length));
         }
 
         /// <summary>
@@ -54,8 +55,11 @@ namespace Cryptos
         public static byte[] Decrypt(byte[] cipher, byte[] key)
         {
             var aes = new AesCryptoServiceProvider { BlockSize = 128 }; // Must always be 128. But AES-256 also uses 128 block size.
+
+            var salt = cipher.Take(16);
+            cipher = cipher.Skip(16);
             var k = key.ToSha256().Take(32); // The 32 is what makes this AES-256
-            var t = aes.CreateDecryptor(k, k.Take(16));
+            var t = aes.CreateDecryptor(k, salt);
             return t.TransformFinalBlock(cipher, 0, cipher.Length);
         }
     }

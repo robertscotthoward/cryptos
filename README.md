@@ -1,6 +1,6 @@
 # Cryptos - Simple RSA/AES Cryptography in C#
 This managed C# .NET Standard 2.0 library implements exactly one "good" industry best practices method for symmetric and asymmetric cryptography.
-For symmetric encryption, AES-256 is used to encrypt and decrypt.
+For symmetric encryption, AES-256 (with a random salt) is used to encrypt and decrypt.
 For asymmetric encryption, RSA (1024, 2048, 4096) is used to sign and verify signatures; 
 and encrypt and decrypt using RSA/AES-256.
 This library only implements the minimum, most convenient methods
@@ -8,10 +8,10 @@ needed to perform the most popular cryptographic operations. It has no dependenc
 
 # Architectural Constraints
 The design considerations that drive this library are:
+* No configuration or choices - one good method; not twenty. Convention over configuration.
+* Easy, intuitive, convenient interface.
 * No dependencies on other libraries
 * Minimal code files.
-* Easy, intuitive, convenient interface.
-* No configuration or choices - one good method; not twenty.
 * Use openssl on the git bash shell to generate asymmetric key pair files.
 * Use password-protected PFX files as well as base-64-encoded PEM files.
 
@@ -31,15 +31,14 @@ the message.
 var message = "Attack at dawn!";
 var password = "Shhhhh!";
 var cipher = Symmetric.Encrypt(message);
-Assert.AreEqual("i5gZtA6bIKXixFYTtalLxQ==", cipher);
 Assert.AreEqual(message, Symmetric.Decrypt(cipher, password));
 ```
 
 The bytes example is:
+```
 byte[] messageBytes = { 0x25, 0x9F, 0xB3 };
 byte[] passwordBytes = { 0x12, 0x34, 0x56, 0x78 };
 Assert.AreEqual(messageBytes.ToBase64(), Symmetric.Decrypt(Symmetric.Encrypt(messageBytes, passwordBytes), passwordBytes).ToBase64());
-```
 ```
 
 ## Asymmetric using pfx file
