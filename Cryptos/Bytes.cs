@@ -15,7 +15,7 @@ namespace Cryptos
     {
         public static byte[] ToMd5(this byte[] bytes) => new MD5CryptoServiceProvider().ComputeHash(bytes);
         public static byte[] ToSha1(this byte[] bytes) => new SHA1CryptoServiceProvider().ComputeHash(bytes);
-        public static byte[] ToSha256(this byte[] bytes) => new SHA384CryptoServiceProvider().ComputeHash(bytes);
+        public static byte[] ToSha256(this byte[] bytes) => new SHA256CryptoServiceProvider().ComputeHash(bytes);
         public static string ToBase64(this byte[] bytes) => Convert.ToBase64String(bytes ?? new byte[0]);
 
         /// <summary>
